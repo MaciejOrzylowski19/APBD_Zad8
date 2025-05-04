@@ -12,7 +12,7 @@ public class ClientTripsService : IClientTripService
     
     
     private string _doClientExistsCommand = "Select COUNT(1) as DoExist from Client Where Client.IdClient = @client;";
-    private string _doClientHaveTripsCommand = "Select COUNT(1) as DoExist from Trip Where Trip.IdClient = @client;";
+    private string _doClientHaveTripsCommand = "Select COUNT(1) as DoExist from Client_Trip Where Client_Trip.IdClient = @client";
 
     private string _getTripsCommand = """
                                       Select Trip.IdTrip, Trip.Name, Trip.Description, Trip.DateFrom, Trip.DateTo, Trip.MaxPeople, 
@@ -38,10 +38,10 @@ public class ClientTripsService : IClientTripService
             }
             if (!await ClientHasTrips(connection, id))
             {
-                throw new ArgumentException("Client does not have any trips");
+                throw new ArgumentNullException();
             }
             
-            using (SqlCommand command = new SqlCommand(_doClientExistsCommand, connection))
+            using (SqlCommand command = new SqlCommand(_getTripsCommand, connection))
             {
                command.Parameters.AddWithValue("@client", id);
                
@@ -49,21 +49,22 @@ public class ClientTripsService : IClientTripService
 
                while (await reader.ReadAsync())
                {
+                   
                    TripDTO tripDto = new TripDTO()
                    {
-                          Id = reader.GetInt32(reader.GetOrdinal("IdTrip")),
-                          Name = reader.GetString(reader.GetOrdinal("Name")),
-                          Description = reader.GetString(reader.GetOrdinal("Description")),
-                          DateFrom = reader.GetDateTime(reader.GetOrdinal("DateFrom")),
-                          DateTo = reader.GetDateTime(reader.GetOrdinal("DateTo")),
-                          MaxPeople = reader.GetInt32(reader.GetOrdinal("MaxPeople"))
+                          Id = reader.GetInt32(0),
+                          Name = reader.GetString(1),
+                          Description = reader.GetString(2),
+                          DateFrom = reader.GetDateTime(3),
+                          DateTo = reader.GetDateTime(4),
+                          MaxPeople = reader.GetInt32(5)
                    };
                    
                    TripSpecificationDTO tripSpecificationDto = new TripSpecificationDTO()
                    {
                        Trip = tripDto,
-                       RegisteredAt = reader.GetInt32(reader.GetOrdinal("RegisteredAt")),
-                       PaymentDate = reader.GetInt32(reader.GetOrdinal("PaymentDate"))
+                       RegisteredAt = reader.GetInt32(6),
+                       PaymentDate = reader.GetInt32(7)
                    };
                      trips.Add(tripSpecificationDto);
                }
@@ -79,10 +80,9 @@ public class ClientTripsService : IClientTripService
             command.Parameters.AddWithValue("@client", id);
             using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                if (!reader.HasRows)
-                {
+                reader.Read();
+                if (reader.GetInt32(0) == 0)
                     return false;
-                }
             }
         }
         return true;
@@ -95,10 +95,9 @@ public class ClientTripsService : IClientTripService
             command.Parameters.AddWithValue("@client", id);
             using (SqlDataReader reader = await command.ExecuteReaderAsync())
             {
-                if (!reader.HasRows)
-                {
+                reader.Read();
+                if (reader.GetInt32(0) == 0)
                     return false;
-                }
             }
         }
         return true;

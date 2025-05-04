@@ -7,20 +7,20 @@ public class DeleteFromTripService : IDeleteFromTrip
 
     private static string commandString = "Delete From Client_Trip Where Client_Trip.IdClient = @clientId and Client_Trip.IdTrip = @tripId; ";
     
-    public Task<DeleteFromTripStatus> DeleteFromTrip(int tripId, int clientId)
+    public async Task<DeleteFromTripStatus> DeleteFromTrip(int tripId, int clientId)
     {
         
         using (SqlConnection connection = TripsDBConnection.GetConnection()) 
         {
-            connection.Open();
+            await connection.OpenAsync();
             
             if (!Utils.ClientExists(connection, clientId).Result)
             {
-                return Task.FromResult(DeleteFromTripStatus.ClientNotFound);
+                return DeleteFromTripStatus.ClientNotFound;
             }
             else if (!Utils.TripExists(connection, tripId).Result)
             {
-                return Task.FromResult(DeleteFromTripStatus.TripNotFound);
+                return DeleteFromTripStatus.TripNotFound;
             }
             
             using (SqlCommand command = new SqlCommand(commandString, connection))
@@ -30,7 +30,8 @@ public class DeleteFromTripService : IDeleteFromTrip
                 
                 command.ExecuteNonQuery();
             }
-            return Task.FromResult(DeleteFromTripStatus.Success);
+
+            return DeleteFromTripStatus.Success;
         }
     }
 }

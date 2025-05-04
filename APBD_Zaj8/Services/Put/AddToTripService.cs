@@ -15,6 +15,7 @@ public class AddToTripService : IAddToTrip
         DateTime date = DateTime.Now;
         
         string mergedDate = date.ToString("yyyyMMdd");
+        Console.WriteLine(mergedDate);
         int dateInt = int.Parse(mergedDate);
 
         using (SqlConnection connection = TripsDBConnection.GetConnection()) 
@@ -36,6 +37,10 @@ public class AddToTripService : IAddToTrip
 
             using (SqlCommand command = new SqlCommand(addToTripCommand, connection))
             {
+                command.Parameters.AddWithValue("@clientId", clientId);
+                command.Parameters.AddWithValue("@tripId", tripId);
+                command.Parameters.AddWithValue("@date", dateInt);
+                
                 await command.ExecuteNonQueryAsync();
             }
             return AddToTripStatus.Success;

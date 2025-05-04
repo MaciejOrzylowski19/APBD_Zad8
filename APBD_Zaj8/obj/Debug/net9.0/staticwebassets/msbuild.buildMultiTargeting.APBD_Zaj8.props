@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\build\APBD_Zaj8.props" />
+</Project>
