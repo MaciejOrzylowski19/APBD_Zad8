@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddControllers();
 Console.WriteLine(builder.Services.Count);
+
 builder.Services.AddScoped<ITripsList, TripsList>();
 builder.Services.AddScoped<IClientTripService, ClientTripsService>();
 builder.Services.AddScoped<IDeleteFromTrip, DeleteFromTripService>();

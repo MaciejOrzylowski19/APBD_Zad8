@@ -7,19 +7,26 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace APBD_Zaj8.Controllers;
 
-[Route("api/[controller]/{id}/trips")]
 [ApiController]
-public class ClientController : ControllerBase
+[Route("api/clients")]
+class ClientController : ControllerBase
 {
     
+    private IDeleteFromTrip _deleteFromTripService;
+    private IAddClient _addClientService;
+    private IAddToTrip _addToTripService;
     private IClientTripService _clientTripService;
     
-    public ClientController(IClientTripService clientTripService)
+    public ClientController(IClientTripService clientTripService, IAddClient addClientService, IAddToTrip addToTripService, IDeleteFromTrip deleteFromTripService)
     {
         _clientTripService = clientTripService;
+        _addClientService = addClientService;
+        _addToTripService = addToTripService;
+        _deleteFromTripService = deleteFromTripService;
     }
-    
+
     [HttpGet]
+    [Route("{id}/trips")]
     public async Task<IActionResult> GetTrips(int id)
     {
         List<TripSpecificationDTO> trips;
@@ -39,19 +46,6 @@ public class ClientController : ControllerBase
         return Ok(trips);
     }
     
-}
-
-[Route("api/clients")]
-[ApiController]
-public class ClientAddController : ControllerBase
-{
-    
-    private IAddClient _addClientService;
-    
-    public ClientAddController(IAddClient addClientService)
-    {
-        _addClientService = addClientService;
-    }
     
     [HttpPost]
     public async Task<IActionResult> AddClient([FromBody] ClientDTO client)
@@ -67,25 +61,13 @@ public class ClientAddController : ControllerBase
         }
         return Ok();
     }
-}
-
-
-
-[Route("api/clients/{id}/trips/{tripId}")]
-[ApiController]
-public class RegisterToTripController : ControllerBase
-{
-    private IAddToTrip _registerToTripService;
     
-    public RegisterToTripController(IAddToTrip registerToTripService)
-    {
-        _registerToTripService = registerToTripService;
-    }
-
+    
     [HttpPut]
+    [Route("{id}/trips/{tripId}")]
     public async Task<IActionResult> RegisterToTrip([FromBody] ClientDTO client, int id, int tripId)
     {
-        var result = await _registerToTripService.AddToTrip(tripId, id);
+        var result = await _addToTripService.AddToTrip(tripId, id);
 
         switch (result)
         {
@@ -99,20 +81,9 @@ public class RegisterToTripController : ControllerBase
 
         return Ok();
     }
-}
-
-[Route("api/clients/{id}/trips/{tripId}")]
-[ApiController]
-public class DeleteFromTripController : ControllerBase
-{
-    private IDeleteFromTrip _deleteFromTripService;
-
-    public DeleteFromTripController(IDeleteFromTrip deleteFromTripService)
-    {
-        _deleteFromTripService = deleteFromTripService;
-    }
-
+    
     [HttpDelete]
+    [Route("{id}/trips/{tripId}")]
     public async Task<IActionResult> DeleteFromTrip(int tripId, int id)
     {
         var result = await _deleteFromTripService.DeleteFromTrip(tripId, id);
@@ -126,4 +97,9 @@ public class DeleteFromTripController : ControllerBase
         }
         return Ok();
     }
+    
+    
+    
+    
+
 }
